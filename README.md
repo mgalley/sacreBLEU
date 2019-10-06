@@ -1,7 +1,10 @@
 This project adds deltaBLEU ([Galley et al., 2015](https://www.aclweb.org/anthology/P15-2073/)) to [SacreBLEU](https://github.com/mjpost/sacreBLEU). 
 
-The method `corpus_bleu` has been extended to take an optional `ref_weights` argument, which is needed to compute deltaBLEU. If these weights are 
-missing (or all set to 1), the method returns the same values as the original `corpus_bleu` method. (deltaBLEU was defined in such a way that it admits BLEU as a special case.) 
+The method `corpus_bleu` has been extended to take an optional `ref_weights` argument, which is needed to compute deltaBLEU. If these weights are missing (or all set to 1), the method returns the same values as the original `corpus_bleu` method. This is because deltaBLEU was defined in such a way that it admits BLEU as a special case. For a sample usage of deltaBLEU with this project, you can run:
+
+```
+python test_deltableu.py
+```
 
 As this project is otherwise identical to SacreBLEU, 
 please refer to [this page](https://github.com/mjpost/sacreBLEU) for more information on how to install and use the code. Note that you will have to 
