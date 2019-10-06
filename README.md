@@ -6,7 +6,7 @@ The method `corpus_bleu` has been extended to take an optional `ref_weights` arg
 python test_deltableu.py
 ```
 
-This example shows that a system (systemB) that tends to match references with low weights does much worse than a system matching highly-weighted references according to deltaBLEU, while BLEU finds the two systems essentially indistinguishable:
+This example shows that a system (system2) that tends to match references with low weights does much worse than a system matching highly-weighted references (system1) according to deltaBLEU, while BLEU finds the two systems essentially indistinguishable:
 
 ```
 BLEU:
