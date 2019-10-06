@@ -6,6 +6,20 @@ The method `corpus_bleu` has been extended to take an optional `ref_weights` arg
 python test_deltableu.py
 ```
 
+This example shows that a system (systemB) that tends to match references with low weights does much worse than a system matching highly-weighted references according to deltaBLEU, while BLEU finds the two systems essentially indistinguishable:
+
+```
+BLEU:
+system1: BLEU = 36.28 90.9/66.7/28.6/10.0 (BP = 1.000 ratio = 1.100 hyp_len = 11 ref_len = 10)
+system2: BLEU = 42.04 100.0/75.0/33.3/12.5 (BP = 1.000 ratio = 1.000 hyp_len = 10 ref_len = 10)
+deltaBLEU with uniform costs:
+system1: BLEU = 36.28 90.9/66.7/28.6/10.0 (BP = 1.000 ratio = 1.100 hyp_len = 11 ref_len = 10)
+system2: BLEU = 42.04 100.0/75.0/33.3/12.5 (BP = 1.000 ratio = 1.000 hyp_len = 10 ref_len = 10)
+deltaBLEU:
+system1: BLEU = 33.11 77.3/54.4/28.6/10.0 (BP = 1.000 ratio = 1.100 hyp_len = 11 ref_len = 10)
+system2: BLEU = 7.14 32.0/6.2/4.2/3.1 (BP = 1.000 ratio = 1.000 hyp_len = 10 ref_len = 10)
+```
+
 As this project is otherwise identical to SacreBLEU, 
 please refer to [this page](https://github.com/mjpost/sacreBLEU) for more information on how to install and use the code. Note that you will have to 
 install SacreBLEU manually (i.e., without pip3, etc.) as this extension is not part of SacreBLEU.
