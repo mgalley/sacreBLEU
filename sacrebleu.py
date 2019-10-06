@@ -1068,6 +1068,46 @@ def ref_stats(output, refs):
     return ngrams, closest_diff, closest_len
 
 
+def weighted_ref_stats(output, refs, refs_w):
+    ngrams = Counter()
+    closest_diff = None
+    closest_len = None
+    ngrams_w = {}
+    max_w = -1
+    for i in range(len(refs)):
+        ref = refs[i]
+        ref_w = refs_w[i]
+
+        if ref_w > max_w:
+            max_w = ref_w
+
+        tokens = ref.split()
+        reflen = len(tokens)
+        diff = abs(len(output.split()) - reflen)
+        if closest_diff is None or diff < closest_diff:
+            closest_diff = diff
+            closest_len = reflen
+        elif diff == closest_diff:
+            if reflen < closest_len:
+                closest_len = reflen
+
+        ngrams_ref = extract_ngrams(ref)
+        for ngram in ngrams_ref.keys():
+            ngrams[ngram] = max(ngrams[ngram], ngrams_ref[ngram])
+            if ngram in ngrams_w.keys():
+                oldw = ngrams_w[ngram]
+                if ref_w > oldw:
+                    ngrams_w[ngram] = ref_w
+            else:
+                ngrams_w[ngram] = ref_w
+
+    if max_w <= 0:
+        raise Exception('Reference set doesn\'t have any reference with weight >= 0: [%s], [%s]' % (refs, refs_w))
+
+    return ngrams, closest_diff, closest_len, ngrams_w, max_w
+
+
+
 def _clean(s):
     """
     Removes trailing and leading spaces and collapses multiple consecutive internal spaces to a single one.
@@ -1330,7 +1370,8 @@ def corpus_bleu(sys_stream: Union[str, Iterable[str]],
                 force=False,
                 lowercase=False,
                 tokenize=DEFAULT_TOKENIZER,
-                use_effective_order=False) -> BLEU:
+                use_effective_order=False,
+                ref_weights=None) -> BLEU:
     """Produces BLEU scores along with its sufficient statistics from a source against one or more references.
 
     :param sys_stream: The system stream (a sequence of segments)
@@ -1358,7 +1399,12 @@ def corpus_bleu(sys_stream: Union[str, Iterable[str]],
     # look for already-tokenized sentences
     tokenized_count = 0
 
-    fhs = [sys_stream] + ref_streams
+    use_dbleu = ref_weights != None
+
+    if use_dbleu:
+        fhs = [sys_stream] + ref_streams + ref_weights
+    else:
+        fhs = [sys_stream] + ref_streams
     for lines in zip_longest(*fhs):
         if None in lines:
             raise EOFError("Source and reference streams have different lengths!")
@@ -1374,9 +1420,24 @@ def corpus_bleu(sys_stream: Union[str, Iterable[str]],
                 logging.warning('It looks like you forgot to detokenize your test data, which may hurt your score.')
                 logging.warning('If you insist your data is detokenized, or don\'t care, you can suppress this message with \'--force\'.')
 
-        output, *refs = [TOKENIZERS[tokenize](x.rstrip()) for x in lines]
+        if use_dbleu:
+                n = len(lines)
+                if (n % 2) == 0:
+                        raise Exception('Wrong number of references or scores: ' + lines)
+                n = int((n-1)/2) + 1
+                refs_w = lines[n:]
+                lines = lines[0:n]
 
-        ref_ngrams, closest_diff, closest_len = ref_stats(output, refs)
+        output, *refs = [TOKENIZERS[tokenize](x.rstrip()) for x in lines]
+        #print(output)
+        #print(refs)
+        #print(refs_w)
+
+        if use_dbleu:
+                ref_ngrams, closest_diff, closest_len, w_ngrams, max_w = weighted_ref_stats(output, refs, refs_w)
+        else:
+                ref_ngrams, closest_diff, closest_len = ref_stats(output, refs)
+                max_w = 1.0
 
         sys_len += len(output.split())
         ref_len += closest_len
@@ -1384,8 +1445,17 @@ def corpus_bleu(sys_stream: Union[str, Iterable[str]],
         sys_ngrams = extract_ngrams(output)
         for ngram in sys_ngrams.keys():
             n = len(ngram.split())
-            correct[n-1] += min(sys_ngrams[ngram], ref_ngrams.get(ngram, 0))
-            total[n-1] += sys_ngrams[ngram]
+            match = min(sys_ngrams[ngram], ref_ngrams.get(ngram, 0))
+            if match > 0:
+                w = 1.0
+                if use_dbleu:
+                    w = w_ngrams[ngram]
+                correct[n-1] += w * match
+            total[n-1] += max_w * sys_ngrams[ngram]
+
+    for i in range(len(correct)):
+        if correct[i] < 0:
+            correct[i] = 0.0
 
     return compute_bleu(correct, total, sys_len, ref_len, smooth_method=smooth_method, smooth_value=smooth_value, use_effective_order=use_effective_order)
 
