@@ -22,7 +22,7 @@ print("BLEU:")
 print("system1: " + str(sacrebleu.corpus_bleu(pred1_t, ref_t)))
 print("system2: " + str(sacrebleu.corpus_bleu(pred2_t, ref_t)))
 
-print("deltaBLEU with uniform costs:") # for sanity check: bleu == delta_bleu when all references have w = 1
+print("deltaBLEU with uniform weights: (shows special case of BLEU)") # for sanity check: bleu == delta_bleu when all references have w = 1
 uni_scores_t = [[1, 1], [1, 1], [1, 1], [1, 1], [1, 1], [1, 1]]
 print("system1: " + str(sacrebleu.corpus_bleu(pred1_t, ref_t, ref_weights=uni_scores_t)))
 print("system2: " + str(sacrebleu.corpus_bleu(pred2_t, ref_t, ref_weights=uni_scores_t)))
@@ -35,7 +35,7 @@ print("system2: " + str(sacrebleu.corpus_bleu(pred2_t, ref_t, ref_weights=ref_sc
 # BLEU:
 # system1: BLEU = 36.28 90.9/66.7/28.6/10.0 (BP = 1.000 ratio = 1.100 hyp_len = 11 ref_len = 10)
 # system2: BLEU = 42.04 100.0/75.0/33.3/12.5 (BP = 1.000 ratio = 1.000 hyp_len = 10 ref_len = 10)
-# deltaBLEU with uniform costs:
+# deltaBLEU with uniform weights: (shows special case of BLEU)
 # system1: BLEU = 36.28 90.9/66.7/28.6/10.0 (BP = 1.000 ratio = 1.100 hyp_len = 11 ref_len = 10)
 # system2: BLEU = 42.04 100.0/75.0/33.3/12.5 (BP = 1.000 ratio = 1.000 hyp_len = 10 ref_len = 10)
 # deltaBLEU:
