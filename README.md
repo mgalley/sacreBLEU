@@ -1,95 +1,11 @@
-[![PyPI version](https://badge.fury.io/py/sacrebleu.svg)](https://badge.fury.io/py/sacrebleu)
-[![GitHub issues](https://img.shields.io/github/issues/mjpost/sacreBLEU.svg)](https://github.com/awslabs/sockeye/issues)
+This project adds deltaBLEU ([Galley et al., 2015](https://www.aclweb.org/anthology/P15-2073/)) to [SacreBLEU](https://github.com/mjpost/sacreBLEU). 
 
-SacreBLEU ([Post, 2018](http://aclweb.org/anthology/W18-6319)) provides hassle-free computation of shareable, comparable, and reproducible BLEU scores.
-Inspired by Rico Sennrich's `multi-bleu-detok.perl`, it produces the official WMT scores but works with plain text.
-It also knows all the standard test sets and handles downloading, processing, and tokenization for you.
+The method `corpus_bleu` has been extended to take an optional `ref_weights` argument, which is needed to compute deltaBLEU. If these weights are 
+missing (or all set to 1), the method returns the same values as the original `corpus_bleu` method. (deltaBLEU was defined in such a way that it admits BLEU as a special case.) 
 
-Why use this version of BLEU?
-- It automatically downloads common WMT test sets and processes them to plain text
-- It produces a short version string that facilitates cross-paper comparisons
-- It properly computes scores on detokenized outputs, using WMT ([Conference on Machine Translation](http://statmt.org/wmt17)) standard tokenization
-- It produces the same values as official script (`mteval-v13a.pl`) used by WMT
-- It outputs the BLEU score without the comma, so you don't have to remove it with `sed` (Looking at you, `multi-bleu.perl`)
-
-# QUICK START
-
-Install the Python module (Python 3 only)
-
-    pip3 install sacrebleu
-
-This installs a shell script, `sacrebleu`.
-(You can also directly run the shell script `sacrebleu.py` in the source repository).
-
-Get a list of available test sets:
-
-    sacrebleu --list
-
-Download the source for one of the pre-defined test sets:
-
-    sacrebleu -t wmt14 -l de-en --echo src > wmt14-de-en.src
-
-(you can also use long parameter names for readability):
-
-    sacrebleu --test-set wmt14 --language-pair de-en --echo src > wmt14-de-en.src
-
-After tokenizing, translating, and detokenizing it, you can score your decoder output easily:
-
-    cat output.detok.txt | sacrebleu -t wmt14 -l de-en
-
-SacreBLEU knows about common WMT test sets, but you can also use it to score system outputs with arbitrary references.
-It also works in backwards compatible model where you manually specify the reference(s), similar to the format of `multi-bleu.txt`:
-
-    cat output.detok.txt | sacrebleu REF1 [REF2 ...]
-
-Note that the system output and references will all be tokenized internally.
-
-SacreBLEU generates version strings like the following.
-Put them in a footnote in your paper!
-Use `--short` for a shorter hash if you like.
-
-    BLEU+case.mixed+lang.de-en+test.wmt17 = 32.97 66.1/40.2/26.6/18.1 (BP = 0.980 ratio = 0.980 hyp_len = 63134 ref_len = 64399)
-
-If you are interested in the translationese effect, you can evaluate BLEU on a subset of sentences
-with a given original language (identified based on the origlang tag in the raw SGM files).
-E.g., to evaluate only against originally German sentences translated to English use:
-
-    sacrebleu -t wmt13 -l de-en --origlang=de < my-wmt13-output.txt
-
-and to evaluate against the complement (in this case origlang en, fr, cs, ru, de) use:
-
-    sacrebleu -t wmt13 -l de-en --origlang=non-de < my-wmt13-output.txt
-
-*Please note* that the evaluator will return a BLEU score only on the requested subset,
-but it expects that you pass through the entire translated test set.
-
-# MOTIVATION
-
-Comparing BLEU scores is harder than it should be.
-Every decoder has its own implementation, often borrowed from Moses, but maybe with subtle changes.
-Moses itself has a number of implementations as standalone scripts, with little indication of how they differ (note: they mostly don't, but `multi-bleu.pl` expects tokenized input).
-Different flags passed to each of these scripts can produce wide swings in the final score.
-All of these may handle tokenization in different ways.
-On top of this, downloading and managing test sets is a moderate annoyance.
-Sacre bleu!
-What a mess.
-
-SacreBLEU aims to solve these problems by wrapping the original Papineni reference implementation together with other useful features.
-The defaults are set the way that BLEU should be computed, and furthermore, the script outputs a short version string that allows others to know exactly what you did.
-As an added bonus, it automatically downloads and manages test sets for you, so that you can simply tell it to score against 'wmt14', without having to hunt down a path on your local file system.
-It is all designed to take BLEU a little more seriously.
-After all, even with all its problems, BLEU is the default and---admit it---well-loved metric of our entire research community.
-Sacre BLEU.
-
-# LICENSE
-
-SacreBLEU is licensed under the Apache 2.0 License.
-
-# CREDITS
-
-This was all Rico Sennrich's idea.
-Originally written by Matt Post.
-The official version can be found at <https://github.com/mjpost/sacrebleu>.
+As this project is otherwise identical to SacreBLEU, 
+please refer to [this page](https://github.com/mjpost/sacreBLEU) for more information on how to install and use the code. Note that you will have to 
+install SacreBLEU manually (i.e., without pip3, etc.) as this extension is not part of SacreBLEU.
 
 If you use SacreBLEU, please cite the following:
 
@@ -104,5 +20,29 @@ If you use SacreBLEU, please cite the following:
   publisher = "Association for Computational Linguistics",
   url = "https://www.aclweb.org/anthology/W18-6319",
   pages = "186--191",
+}
+```
+
+If you use deltaBLEU (e.g., this implementation), please cite:
+
+```
+@inproceedings{galley-etal-2015-deltableu,
+  title = "delta{BLEU}: A Discriminative Metric for Generation Tasks with Intrinsically Diverse Targets",
+  author = "Galley, Michel  and
+  Brockett, Chris  and
+  Sordoni, Alessandro  and
+  Ji, Yangfeng  and
+  Auli, Michael  and
+  Quirk, Chris  and
+  Mitchell, Margaret  and
+  Gao, Jianfeng  and
+  Dolan, Bill",
+  booktitle = "Proceedings of the 53rd Annual Meeting of the Association for Computational Linguistics and the 7th International Joint Conference on Natural Language Processing (Volume 2: Short Papers)",
+  month = jul,
+  year = "2015",
+  address = "Beijing, China",
+  publisher = "Association for Computational Linguistics",
+  doi = "10.3115/v1/P15-2073",
+  pages = "445--450",
 }
 ```

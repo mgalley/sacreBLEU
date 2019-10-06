@@ -1381,6 +1381,7 @@ def corpus_bleu(sys_stream: Union[str, Iterable[str]],
     :param force: Ignore data that looks already tokenized
     :param lowercase: Lowercase the data
     :param tokenize: The tokenizer to use
+    :param ref_weights: A list of one or more reference weight streams (must have same dimensions as ref_streams)
     :return: a BLEU object containing everything you'd want
     """
 
@@ -1429,15 +1430,12 @@ def corpus_bleu(sys_stream: Union[str, Iterable[str]],
                 lines = lines[0:n]
 
         output, *refs = [TOKENIZERS[tokenize](x.rstrip()) for x in lines]
-        #print(output)
-        #print(refs)
-        #print(refs_w)
 
         if use_dbleu:
                 ref_ngrams, closest_diff, closest_len, w_ngrams, max_w = weighted_ref_stats(output, refs, refs_w)
         else:
-                ref_ngrams, closest_diff, closest_len = ref_stats(output, refs)
                 max_w = 1.0
+                ref_ngrams, closest_diff, closest_len = ref_stats(output, refs)
 
         sys_len += len(output.split())
         ref_len += closest_len
